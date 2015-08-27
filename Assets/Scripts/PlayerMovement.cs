@@ -3,28 +3,59 @@ using System.Collections;
 
 public class PlayerMovement : MonoBehaviour {
 
+	KeyboardInput keyIn;
+
+	public float speed = 3f;
+	public float jumpSpeed = 8f;
+	public float gravSpeed = 10f;
+	public bool grounded = false;
+
+	void Start() {
+		keyIn = GetComponent<KeyboardInput> ();
+	}
+
+	void Update() {
+
+		if (Physics.Raycast (transform.position, new Vector3 (0, -1), .8f)) {
+			grounded = true;
+		} else {
+			grounded = false;
+		}
+
+		if (grounded == false) {
+			transform.Translate(new Vector3(0, -gravSpeed * Time.deltaTime));
+		}
+
+		if (keyIn.XAxis == 1 && !Physics.Raycast(transform.position, new Vector3(1, 0), .5f)) {
+			transform.Translate (new Vector3 (speed * Time.deltaTime, 0));
+		} 
+		else if (keyIn.XAxis == -1 && !Physics.Raycast(transform.position, new Vector3(-1, 0), .5f)) {
+			transform.Translate (new Vector3 (-speed * Time.deltaTime, 0));
+		}
+
+		if (keyIn.JumpButtonPressedThisFrame && grounded == true) {
+			transform.Translate(new Vector3(0, jumpSpeed));
+		}
+	}
+
+	void OnTriggerEnter(Collider collision) {
+		if (collision.gameObject.name == "Enemy Parent") {
+			Application.LoadLevel(Application.loadedLevel);
+		}
+
+		if(collision.gameObject.name == "Moving Platform Parent" && grounded == true) {
+			this.transform.parent = collision.gameObject.transform;
+		}
+	}
+
+	void OnTriggerExit(Collider collision) {
+		if (collision.gameObject.name == "Moving Platform Parent") {
+			this.transform.parent = null;
+		}
+	}
+
     /*
      * TO DO:
-     * Movement
-     *      Should use the CharacterController which is already attached to this GameObject
-     *      Be able to move left and right
-     *      Collide with/be stopped by walls
-     *      Not move too quickly or slowly
-     *          Remember that movement happens every frame
-     * Jumping/Falling
-     *      Fall to the ground, and not through it
-     *      Able to jump
-     *      Can reach platforms to the right, but not the one on the left
-     *      Only able to jump while standing on the ground
-     * Input
-     *      Ideally, use the KeyboardInput script which is already attached to this GameObject
-     *      A & D for left and right movement
-     *      Space for jumping
-     * Moving Platform
-     *      When standing on the platform, the character should stay on it/move relative to the moving platform
-     *      When not standing on the platform, revert to normal behavior
-     * Enemy
-     *      If the character touches the enemy, he should "die"
      *      
      * 
      * 
